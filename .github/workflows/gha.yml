@@ -105,6 +105,7 @@ jobs:
 
        - name: Build
          run: |
+           echo "${env:platform_toolset}"
            msbuild src\$Env:solutionname -property:Configuration=${{ matrix.CONFIG }},PlatformToolset=$Env:platform_toolset -m -v:m
            msbuild src\examples\$Env:ex_solutionname -property:Configuration=${{ matrix.CONFIG }},PlatformToolset=$Env:platform_toolset -m -v:m
 
