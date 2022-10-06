@@ -103,8 +103,7 @@ def main():
 
     # init and run the state machine
     a = statemachine.StateMachine(statemachine.InitState(context))
-    operations, operation_ids, markers = context.extract_operations()
-    if a.run_all(operations, operation_ids, markers) is False:
+    if a.run_all(context.extract_operations()) is False:
         sys.exit(1)
 
 

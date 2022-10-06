@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2018-2022, Intel Corporation
+# Copyright 2018-2021, Intel Corporation
 
 import memoryoperations as memops
 import reorderengines
 from reorderexceptions import InconsistentFileException
 from reorderexceptions import NotSupportedOperationException
-import os
 
 
 class State:
@@ -159,6 +158,7 @@ class CollectingState(State):
     def substitute_reorder(self, order_ops):
         """
         Changes the reordering engine based on the log marker class.
+
         :param order_ops: The reordering marker class.
         :type order_ops: subclass of :class:`memoryoperations.ReorderBase`
         :return: None
@@ -232,8 +232,9 @@ class CollectingState(State):
         :type file_op: memoryoperations.Register_file
         :return: None
         """
-        self._context.file_handler.add_file(file_op.name,
-                                            file_op.address, file_op.size)
+        self._context.file_handler.add_file(
+            file_op.name, file_op.address, file_op.size
+        )
 
     def move_inner_state(self, in_op):
         """
@@ -248,8 +249,10 @@ class CollectingState(State):
         """
         if isinstance(in_op, memops.Store) and self._inner_state == "init":
             self._inner_state = "dirty"
-        elif isinstance(in_op, memops.FlushBase) and \
-                self._inner_state == "dirty":
+        elif (
+            isinstance(in_op, memops.FlushBase)
+            and self._inner_state == "dirty"
+        ):
             self._inner_state = "flush"
         elif isinstance(in_op, memops.Fence) and self._inner_state == "flush":
             self._inner_state = "fence"
@@ -305,18 +308,23 @@ class ReplayingState(State):
         flushed_stores = list(filter(lambda x: x.flushed, self._ops_list))
 
         # not-flushed stores should be passed to next state
-        State.trans_stores = list(filter(lambda x: x.flushed is False,
-                                         self._ops_list))
+        State.trans_stores = list(
+            filter(lambda x: x.flushed is False, self._ops_list)
+        )
 
         if self._context.test_on_barrier:
-            self._context.logger.debug("Current reorder engine: {}"
-                                       .format(self._context.reorder_engine))
+            self._context.logger.debug(
+                "Current reorder engine: {}".format(
+                    self._context.reorder_engine
+                )
+            )
             for i, seq in enumerate(
                 self._context.reorder_engine.generate_sequence(flushed_stores)
             ):
                 self._context.logger.debug(
-                    "NEXT Sequence (no. {0}) with length: \
-                        {1}".format(i, len(seq))
+                    "NEXT Sequence (no. {0}) with length: {1}".format(
+                        i, len(seq)
+                    )
                 )
                 for j, op in enumerate(seq):
                     self._context.logger.debug(
@@ -363,7 +371,7 @@ class StateMachine:
         """
         self._curr_state = init_state
 
-    def run_all(self, operations, operation_ids, markers):
+    def run_all(self, operations):
         """
         Starts the state machine.
 
@@ -373,12 +381,8 @@ class StateMachine:
         :return: None
         """
         all_consistent = True
-        for ops, ops_id in zip(operations, operation_ids):
+        for ops in operations:
             self._curr_state._context.logger.info(ops)
-            markers_to_pass = (m[1] for m in markers if m[0] < ops_id[0])
-            markers_to_pass = "|".join(markers_to_pass)
-            self._curr_state._context.logger.info(markers_to_pass)
-            os.environ["PMREORDER_MARKERS"] = markers_to_pass
             self._curr_state = self._curr_state.next(ops)
             check = self._curr_state.run(ops)
             if check is False:

@@ -1,0 +1,7 @@
+src/libpmem2/ppc64/init.c
+src/common/queue.h
+src/core/valgrind/*
+subprojects/*
+miniasync/*
+src/include/*
+src/windows/*

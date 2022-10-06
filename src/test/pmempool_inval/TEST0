@@ -6,7 +6,7 @@
 # pmempool_inval/TEST0 -- test for pmempool invalid input commands
 #
 
-. ../unittest/unittest.sh
+. $UNITTEST_SH
 
 require_test_type medium
 require_fs_type pmem non-pmem
@@ -31,21 +31,11 @@ expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk "rm *" &>> $LOG
 expect_abnormal_exit $PMEMPOOL$EXESUFFIX create obj rm * &>> $LOG
 expect_abnormal_exit $PMEMPOOL$EXESUFFIX create "$$&&%%" &>> $LOG
 expect_abnormal_exit $PMEMPOOL$EXESUFFIX info 'file && ls' &>> $LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk -1 $POOL &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 0x100 $POOL &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 0xffffffff $POOL &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk "0xfffffffe" $POOL &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 0x80000000 $POOL &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 0x1000000 $POOL &>>$LOG
 
 echo "Poolset creation" >> $LOG
 create_poolset $POOL 32ls:$POOL1 &>>$LOG
 expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 512 $POOL &>>$LOG
 create_poolset $POOL 32M:$POOL2 &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 512 $POOL &>>$LOG
-create_poolset $POOL 0M:$POOL1 &>>$LOG
-expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 512 $POOL &>>$LOG
-create_poolset $POOL 0xffffffff:$POOL1 &>>$LOG
 expect_abnormal_exit $PMEMPOOL$EXESUFFIX create blk 512 $POOL &>>$LOG
 
 check
